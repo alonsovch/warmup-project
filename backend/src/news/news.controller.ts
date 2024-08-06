@@ -1,6 +1,5 @@
-import { Controller, Delete, Get, Param } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { NewsService } from './news.service';
-import { promises } from 'dns';
 import { News } from './schemas/news.schema';
 
 @Controller('news')
@@ -15,5 +14,16 @@ export class NewsController {
     @Delete(':id')
     async delete(@Param('id') id: string): Promise<News> {
         return this.newsService.delete(id);
+    }
+
+    @Get('status')
+    getStatus() {
+        return { lastUpdate: this.newsService.getLastUpdate() };
+    }
+
+    @Post('refresh')
+    async refreshNews() {
+        await this.newsService.forceDataRefresh();
+        return { message: 'News refreshed successfully' };
     }
 }

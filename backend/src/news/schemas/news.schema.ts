@@ -10,7 +10,10 @@ export class News extends Document {
   url: string;
 
   @Prop({required: true})
-  cratedAt: Date;
+  author: string;
+
+  @Prop({required: true})
+  createdAt: Date;
 
   @Prop({default: false})
   deleted: boolean;
