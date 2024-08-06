@@ -5,6 +5,7 @@ import { Cron } from '@nestjs/schedule';
 import axios from 'axios';
 import { News } from './schemas/news.schema';
 import { CronExpression } from '@nestjs/schedule';
+import { NewsHit, NewsItem } from './news.types';
 
 @Injectable()
 export class NewsService implements OnModuleInit {
@@ -20,12 +21,12 @@ export class NewsService implements OnModuleInit {
   private async updateNews() {
     this.logger.debug('Fetching latest news from Hacker News');
     const response = await axios.get('https://hn.algolia.com/api/v1/search_by_date?query=nodejs');
-    const newsItems = response.data.hits.map(hit => ({
+    const newsItems : NewsItem[] = response.data.hits.map((hit : NewsHit) => ({
       title: hit.story_title || hit.title || null,
       url: hit.story_url || hit.url || null,
       author: hit.author || 'Unknown',
       createdAt: new Date(hit.created_at) || new Date(),
-    })).filter(newsItem => newsItem.url !== null && newsItem.title !== null);
+    })).filter((newsItem : NewsItem ) => newsItem.url !== null && newsItem.title !== null);
 
     for (const newsItem of newsItems) {
       const exists = await this.newsModel.exists({ url: newsItem.url, deleted: false });
@@ -42,7 +43,7 @@ export class NewsService implements OnModuleInit {
     await this.updateNews();
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_HOUR)
   async handleCron() {
     await this.updateNews();
   }
