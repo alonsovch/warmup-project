@@ -26,4 +26,11 @@ export class NewsController {
         await this.newsService.forceDataRefresh();
         return { message: 'News refreshed successfully' };
     }
+
+    @Post('drop_database')
+    async dropDatabase() {
+        await this.newsService.dropDatabase();
+        return { message: 'Database dropped successfully' };
+    }
+
 }

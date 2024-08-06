@@ -28,22 +28,32 @@ export class NewsService implements OnModuleInit {
       createdAt: new Date(hit.created_at) || new Date(),
     })).filter((newsItem : NewsItem ) => newsItem.url !== null && newsItem.title !== null);
 
+    let numberOfNews = 0
     for (const newsItem of newsItems) {
       const exists = await this.newsModel.exists({ url: newsItem.url, deleted: false });
       if (!exists && newsItem.title !== 'Untitled') {
         await new this.newsModel(newsItem).save();
+        numberOfNews += 1
       }
     }
 
     this.lastUpdate = new Date();
-    this.logger.debug(`Fetched ${newsItems.length} news items and saved to the database`);
+    if (numberOfNews === 0) {
+      this.logger.debug('No new news items found');
+      return;
+    }
+    else {
+      this.logger.debug(`Fetched ${numberOfNews} news items and saved to the database`);
+      return;
+    }
+    
   }
 
   async forceDataRefresh() {
     await this.updateNews();
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleCron() {
     await this.updateNews();
   }
@@ -58,5 +68,9 @@ export class NewsService implements OnModuleInit {
 
   getLastUpdate(): Date | null {
     return this.lastUpdate;
+  }
+
+  async dropDatabase() {
+    await this.newsModel.deleteMany({}).exec();
   }
 }
