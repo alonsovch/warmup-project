@@ -3,19 +3,19 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class News extends Document {
-  @Prop({required: true, unique: true})
+  @Prop({ required: true, unique: true })
   title: string;
 
-  @Prop({required: true, unique: true})
+  @Prop({ required: true, unique: true })
   url: string;
 
-  @Prop({required: true})
+  @Prop({ required: true })
   author: string;
 
-  @Prop({required: true})
+  @Prop({ required: true })
   createdAt: Date;
 
-  @Prop({default: false})
+  @Prop({ default: false })
   deleted: boolean;
 }
 

@@ -20,20 +20,30 @@ export class NewsService implements OnModuleInit {
 
   private async updateNews() {
     this.logger.debug('Fetching latest news from Hacker News');
-    const response = await axios.get('https://hn.algolia.com/api/v1/search_by_date?query=nodejs');
-    const newsItems : NewsItem[] = response.data.hits.map((hit : NewsHit) => ({
-      title: hit.story_title || hit.title || null,
-      url: hit.story_url || hit.url || null,
-      author: hit.author || 'Unknown',
-      createdAt: new Date(hit.created_at) || new Date(),
-    })).filter((newsItem : NewsItem ) => newsItem.url !== null && newsItem.title !== null);
+    const response = await axios.get(
+      'https://hn.algolia.com/api/v1/search_by_date?query=nodejs',
+    );
+    const newsItems: NewsItem[] = response.data.hits
+      .map((hit: NewsHit) => ({
+        title: hit.story_title || hit.title || null,
+        url: hit.story_url || hit.url || null,
+        author: hit.author || 'Unknown',
+        createdAt: new Date(hit.created_at) || new Date(),
+      }))
+      .filter(
+        (newsItem: NewsItem) =>
+          newsItem.url !== null && newsItem.title !== null,
+      );
 
-    let numberOfNews = 0
+    let numberOfNews = 0;
     for (const newsItem of newsItems) {
-      const exists = await this.newsModel.exists({ url: newsItem.url, deleted: false });
+      const exists = await this.newsModel.exists({
+        url: newsItem.url,
+        deleted: false,
+      });
       if (!exists && newsItem.title !== 'Untitled') {
         await new this.newsModel(newsItem).save();
-        numberOfNews += 1
+        numberOfNews += 1;
       }
     }
 
@@ -41,12 +51,12 @@ export class NewsService implements OnModuleInit {
     if (numberOfNews === 0) {
       this.logger.debug('No new news items found');
       return;
-    }
-    else {
-      this.logger.debug(`Fetched ${numberOfNews} news items and saved to the database`);
+    } else {
+      this.logger.debug(
+        `Fetched ${numberOfNews} news items and saved to the database`,
+      );
       return;
     }
-    
   }
 
   async forceDataRefresh() {
@@ -59,11 +69,16 @@ export class NewsService implements OnModuleInit {
   }
 
   async findAll() {
-    return this.newsModel.find({ deleted: false }).sort({ createdAt: -1 }).exec();
+    return this.newsModel
+      .find({ deleted: false })
+      .sort({ createdAt: -1 })
+      .exec();
   }
 
   async delete(id: string): Promise<News> {
-    return this.newsModel.findByIdAndUpdate(id, { deleted: true }, { new: true }).exec();
+    return this.newsModel
+      .findByIdAndUpdate(id, { deleted: true }, { new: true })
+      .exec();
   }
 
   getLastUpdate(): Date | null {
