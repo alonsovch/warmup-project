@@ -1,10 +1,9 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import axios from 'axios';
 import { News } from './schemas/news.schema';
-import { CronExpression } from '@nestjs/schedule';
 import { NewsHit, NewsItem } from './news.types';
 
 @Injectable()
@@ -14,58 +13,74 @@ export class NewsService implements OnModuleInit {
 
   constructor(@InjectModel(News.name) private newsModel: Model<News>) {}
 
-  onModuleInit() {
-    this.forceDataRefresh();
+  async onModuleInit() {
+    await this.loadInitialData();
+    this.handleCron();
   }
 
-  private async updateNews() {
-    this.logger.debug('Fetching latest news from Hacker News');
-    const response = await axios.get(
-      'https://hn.algolia.com/api/v1/search_by_date?query=nodejs',
-    );
-    const newsItems: NewsItem[] = response.data.hits
-      .map((hit: NewsHit) => ({
-        title: hit.story_title || hit.title || null,
-        url: hit.story_url || hit.url || null,
-        author: hit.author || 'Unknown',
-        createdAt: new Date(hit.created_at) || new Date(),
-      }))
-      .filter(
-        (newsItem: NewsItem) =>
-          newsItem.url !== null && newsItem.title !== null,
-      );
+  private async fetchNewsData(url: string): Promise<NewsItem[]> {
+    this.logger.debug(`Fetching news from URL: ${url}`);
+    try {
+      const response = await axios.get(url);
+      return response.data.hits
+        .map((hit: NewsHit) => ({
+          title: hit.story_title || hit.title || null,
+          url: hit.story_url || hit.url || null,
+          author: hit.author || 'Unknown',
+          createdAt: new Date(hit.created_at) || new Date(),
+        }))
+        .filter(
+          (newsItem: NewsItem) =>
+            newsItem.url !== null && newsItem.title !== null,
+        );
+    } catch (error) {
+      this.logger.error('Error fetching news', error.stack);
+      return [];
+    }
+  }
 
-    let numberOfNews = 0;
-    for (const newsItem of newsItems) {
-      const exists = await this.newsModel.exists({
-        url: newsItem.url,
-        deleted: false,
-      });
-      if (!exists && newsItem.title !== 'Untitled') {
-        await new this.newsModel(newsItem).save();
-        numberOfNews += 1;
-      }
+  private async updateNews(newsItems: NewsItem[]) {
+    if (newsItems.length === 0) {
+      this.logger.debug('No news items to update');
+      return;
     }
 
-    this.lastUpdate = new Date();
-    if (numberOfNews === 0) {
-      this.logger.debug('No new news items found');
-      return;
-    } else {
+    try {
+      let numberOfNews = 0;
+      const bulkOps = newsItems.map((newsItem) => ({
+        updateOne: {
+          filter: { url: newsItem.url, deleted: false },
+          update: { $setOnInsert: newsItem },
+          upsert: true,
+        },
+      }));
+
+      const result = await this.newsModel.bulkWrite(bulkOps, {
+        ordered: false,
+      });
+      numberOfNews = result.upsertedCount;
+
+      this.lastUpdate = new Date();
       this.logger.debug(
         `Fetched ${numberOfNews} news items and saved to the database`,
       );
-      return;
+    } catch (error) {
+      this.logger.error('Error updating news', error.stack);
     }
   }
 
-  async forceDataRefresh() {
-    await this.updateNews();
+  async loadInitialData() {
+    const url =
+      'https://hn.algolia.com/api/v1/search_by_date?query=nodejs&hitsPerPage=500';
+    const newsItems = await this.fetchNewsData(url);
+    await this.updateNews(newsItems);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_HOUR)
   async handleCron() {
-    await this.updateNews();
+    const url = 'https://hn.algolia.com/api/v1/search_by_date?query=nodejs';
+    const newsItems = await this.fetchNewsData(url);
+    await this.updateNews(newsItems);
   }
 
   async findAll() {

@@ -7,9 +7,9 @@ import { NewsModule } from './news/news.module';
 
 @Module({
   imports: [
-      NewsModule,
-      MongooseModule.forRoot('mongodb://mongodb:27017/newsdb'),
-      ScheduleModule.forRoot(),
+    NewsModule,
+    MongooseModule.forRoot('mongodb://mongodb:27017/newsdb'),
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

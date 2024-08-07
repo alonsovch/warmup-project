@@ -23,7 +23,7 @@ export class NewsController {
 
   @Post('refresh')
   async refreshNews() {
-    await this.newsService.forceDataRefresh();
+    await this.newsService.loadInitialData();
     return { message: 'News refreshed successfully' };
   }
 
