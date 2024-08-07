@@ -20,7 +20,9 @@ services:
       - MONGO_URI=mongodb://mongodb:27017/newsdb
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     restart: always
     container_name: frontend
     ports:
@@ -29,6 +31,9 @@ services:
       - backend
     environment:
       - API_URL=http://backend:3000/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
 
 volumes:
   mongo_data:

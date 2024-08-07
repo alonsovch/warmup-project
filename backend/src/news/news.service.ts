@@ -46,10 +46,9 @@ export class NewsService implements OnModuleInit {
     }
 
     try {
-      let numberOfNews = 0;
       const bulkOps = newsItems.map((newsItem) => ({
         updateOne: {
-          filter: { url: newsItem.url, deleted: false },
+          filter: { url: newsItem.url },
           update: { $setOnInsert: newsItem },
           upsert: true,
         },
@@ -58,12 +57,16 @@ export class NewsService implements OnModuleInit {
       const result = await this.newsModel.bulkWrite(bulkOps, {
         ordered: false,
       });
-      numberOfNews = result.upsertedCount;
+
+      if (result.upsertedCount > 0) {
+        this.logger.debug(
+          `Fetched ${result.upsertedCount} news items and saved to the database`,
+        );
+      } else {
+        this.logger.debug('No new news items to save');
+      }
 
       this.lastUpdate = new Date();
-      this.logger.debug(
-        `Fetched ${numberOfNews} news items and saved to the database`,
-      );
     } catch (error) {
       this.logger.error('Error updating news', error.stack);
     }
