@@ -35,7 +35,8 @@ test_frontend:
     - npm run test:coverage
   artifacts:
     reports:
-      coverage_report: coverage/cobertura-coverage.xml
+      coverage_format: cobertura
+      path: coverage/cobertura-coverage.xml
     paths:
       - coverage
     expire_in: 1 week
@@ -49,7 +50,8 @@ test_backend:
     - npm run test:cov
   artifacts:
     reports:
-      coverage_report: coverage/cobertura-coverage.xml
+      coverage_format: cobertura
+      path: coverage/cobertura-coverage.xml
     paths:
       - coverage
     expire_in: 1 week
