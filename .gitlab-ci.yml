@@ -1,22 +1,62 @@
 stages:
-  - build
-  - test
   - lint
+  - test
+  - build
+  - deploy
 
 variables:
-  NODE_IMAGE: 'node:20'
-
-cache:
-  paths:
-    - frontend/node_modules/
-    - backend/node_modules/
+  NODE_VERSION: '20'
 
 before_script:
   - npm install -g npm@latest
 
+lint_frontend:
+  stage: lint
+  image: node:${NODE_VERSION}
+  script:
+    - cd frontend
+    - npm install
+    - npm run lint
+
+lint_backend:
+  stage: lint
+  image: node:${NODE_VERSION}
+  script:
+    - cd backend
+    - npm install
+    - npm run lint
+
+test_frontend:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - cd frontend
+    - npm install
+    - npm run test:coverage
+  artifacts:
+    reports:
+      cobertura: coverage/cobertura-coverage.xml
+    paths:
+      - coverage
+    expire_in: 1 week
+
+test_backend:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - cd backend
+    - npm install
+    - npm run test:cov
+  artifacts:
+    reports:
+      cobertura: coverage/cobertura-coverage.xml
+    paths:
+      - coverage
+    expire_in: 1 week
+
 build_frontend:
   stage: build
-  image: $NODE_IMAGE
+  image: node:${NODE_VERSION}
   script:
     - cd frontend
     - npm install
@@ -24,11 +64,11 @@ build_frontend:
   artifacts:
     paths:
       - frontend/.next
-      - frontend/out
+    expire_in: 1 week
 
 build_backend:
   stage: build
-  image: $NODE_IMAGE
+  image: node:${NODE_VERSION}
   script:
     - cd backend
     - npm install
@@ -36,51 +76,14 @@ build_backend:
   artifacts:
     paths:
       - backend/dist
+    expire_in: 1 week
 
-lint_frontend:
-  stage: lint
-  image: $NODE_IMAGE
+deploy:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
   script:
-    - cd frontend
-    - npm run lint
-
-lint_backend:
-  stage: lint
-  image: $NODE_IMAGE
-  script:
-    - cd backend
-    - npm run lint
-
-test_frontend:
-  stage: test
-  image: $NODE_IMAGE
-  script:
-    - cd frontend
-    - npm install
-    - npm run test -- --coverage
-  artifacts:
-    reports:
-      cobertura: frontend/coverage/cobertura-coverage.xml
-    paths:
-      - frontend/coverage
-
-test_backend:
-  stage: test
-  image: $NODE_IMAGE
-  script:
-    - cd backend
-    - npm install
-    - npm run test:cov
-  artifacts:
-    reports:
-      cobertura: backend/coverage/cobertura-coverage.xml
-    paths:
-      - backend/coverage
-
-test_e2e:
-  stage: test
-  image: $NODE_IMAGE
-  script:
-    - cd backend
-    - npm install
-    - npm run test:e2e
+    - docker-compose -f docker-compose.yml up -d
+  only:
+    - main
