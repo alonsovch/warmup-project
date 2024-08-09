@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:ital,wght@0,400..800;1,400..800&display=swap');
+
+header {
+  background-color: #2558bf;
+  color: white;
+  text-align: left;
+  padding: 5% 0% 5% 3%;
+  font-family: 'Wix Madefor Text', sans-serif;
+}
+
+h1 {
+  font-size: 4rem;
+}
+
+main {
+  padding: 2%;
+  background-color: white;
+}
+
+div.news-item {
+  padding: 2%;
+  background-color: #fff;
+  border-bottom: 1px solid black;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: black;
+}
+
+div.news-item-container {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+
+.news-title,
+.news-author {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.news-date {
+  margin-left: auto;
+  padding-right: 30px;
+  font-size: 13pt;
+  color: #333;
+  white-space: nowrap;
+}
+
+.news-link {
+  display: flex;
+  flex-grow: 1;
+  text-decoration: none;
+  align-items: center;
+}
+
+button {
+  color: white;
+  background-color: white;
+  border: none;
+}
+
+.news-title {
+  font-size: 13pt;
+  color: #333;
+  white-space: nowrap;
+}
+
+.news-author {
+  font-size: 13pt;
+  color: #999;
+  white-space: nowrap;
+}
+
+div.news-item:hover {
+  background-color: #fafafa;
+}
+
+div.news-item:hover button {
+  color: black;
+  background-color: #fafafa;
+  border: none;
+  cursor: pointer;
+}

@@ -1,5 +1,7 @@
 import React from 'react';
 import NewsList from '../organisms/NewsList';
+import './template.css';
+import Image from 'next/image';
 
 const MainTemplate: React.FC = () => {
   return (

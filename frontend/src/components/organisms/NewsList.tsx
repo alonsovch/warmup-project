@@ -14,7 +14,6 @@ interface NewsItemProps {
 
 const NewsList: React.FC = () => {
   const [news, setNews] = useState<NewsItemProps[]>([]);
-  const [lastUpdate, setLastUpdate] = useState<string | null>(null);
 
   useEffect(() => {
     const loadNews = async () => {

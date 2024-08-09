@@ -32,4 +32,10 @@ export class NewsController {
     await this.newsService.dropDatabase();
     return { message: 'Database dropped successfully' };
   }
+
+  @Post('undo_deletes')
+  async undoDeletes() {
+    await this.newsService.undoDeletes();
+    return { message: 'Undone deletes successfully' };
+  }
 }

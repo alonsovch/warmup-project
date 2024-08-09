@@ -6,6 +6,8 @@ import handleDate from '@/utils/handleDate';
 
 import { FaRegTrashAlt } from 'react-icons/fa';
 
+import { GoTrash } from 'react-icons/go';
+
 interface NewsItemProps {
   id: string;
   title: string;
@@ -31,12 +33,16 @@ const NewsItem: React.FC<NewsItemProps> = ({
         rel="noopener noreferrer"
         className="news-link"
       >
-        <Text className="news-title">{title}</Text>
-        <Text className="news-author"> - {author} -</Text>
-        <Text className="news-date">{handleDate(date)}</Text>
+        <div className="news-item-container">
+          <div>
+            <Text className="news-title">{title}</Text>
+            <Text className="news-author"> - {author} -</Text>
+          </div>
+          <Text className="news-date">{handleDate(date)}</Text>
+        </div>
       </a>
       <Button onClick={() => onDelete(id)}>
-        <FaRegTrashAlt />
+        <GoTrash size={20} />
       </Button>
     </div>
   );

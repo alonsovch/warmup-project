@@ -106,4 +106,10 @@ export class NewsService implements OnModuleInit {
   async dropDatabase() {
     await this.newsModel.deleteMany({}).exec();
   }
+
+  async undoDeletes() {
+    await this.newsModel
+      .updateMany({ deleted: true }, { deleted: false })
+      .exec();
+  }
 }
